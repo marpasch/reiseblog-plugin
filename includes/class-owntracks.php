@@ -70,13 +70,25 @@ class Reiseblog_OwnTracks {
     }
 
     public function get_positions($request) {
-        global $wpdb;
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'reise_positions';
 
-        $table_name = $wpdb->prefix . 'reise_positions';
-        $results = $wpdb->get_results("SELECT latitude AS lat, longitude AS lon, timestamp FROM $table_name ORDER BY id ASC", ARRAY_A);
-
-        return $results;
+    $date = $request->get_param('date');
+    if ($date) {
+        $sql = $wpdb->prepare(
+            "SELECT latitude AS lat, longitude AS lon, timestamp
+             FROM $table_name
+             WHERE DATE(timestamp) = %s
+             ORDER BY id ASC",
+            $date
+        );
+    } else {
+        $sql = "SELECT latitude AS lat, longitude AS lon, timestamp FROM $table_name ORDER BY id ASC";
     }
+
+    return $wpdb->get_results($sql, ARRAY_A);
+}
+
 
     public function add_admin_menu() {
         add_menu_page(

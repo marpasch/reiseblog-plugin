@@ -26,8 +26,9 @@ function reiseblog_autoload_modules() {
         'includes/class-map.php',
         'includes/class-calendar.php',
         'includes/class-database.php',
-	'includes/class-gallery-map.php',
-	'includes/class-route-gallery-map.php',
+        'includes/class-gallery-map.php',
+        'includes/class-route-gallery-map.php',
+        'includes/class-exporter.php',          // <– NEU: Exporter laden
     ];
 
     foreach ($modules as $module) {
@@ -54,12 +55,11 @@ function reiseblog_init_modules() {
         new Reiseblog_Calendar();
     }
     if (class_exists('Reiseblog_Gallery_Map')) {
-    new Reiseblog_Gallery_Map();
+        new Reiseblog_Gallery_Map();
     }
     if (class_exists('Reiseblog_Route_Gallery_Map')) {
-    new Reiseblog_Route_Gallery_Map();
+        new Reiseblog_Route_Gallery_Map();
     }
-
 }
 add_action('plugins_loaded', 'reiseblog_init_modules', 20);
 
@@ -77,12 +77,20 @@ function reiseblog_activate() {
         $gallery = new Reiseblog_Gallery();
         $gallery->create_gallery_table();
     }
+
+    // Cronjob für den täglichen Export einrichten
+    if (class_exists('Reiseblog_Exporter')) {
+        Reiseblog_Exporter::schedule_events();
+    }
 }
 register_activation_hook(__FILE__, 'reiseblog_activate');
 
 function reiseblog_deactivate() {
-    // Optional: Cleanup tasks
+    // Cronjob entfernen
+    $timestamp = wp_next_scheduled('reiseblog_daily_export');
+    if ($timestamp) {
+        wp_unschedule_event($timestamp, 'reiseblog_daily_export');
+    }
 }
 register_deactivation_hook(__FILE__, 'reiseblog_deactivate');
-
 ?>

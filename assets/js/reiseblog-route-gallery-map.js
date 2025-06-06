@@ -34,8 +34,12 @@ document.addEventListener('DOMContentLoaded', function () {
     thumbnailsContainer.style.gap = '10px';
     mapContainer.after(thumbnailsContainer);
 
+    // aktuelles Datum ermitteln
+    const today = new Date().toISOString().split('T')[0];
+
     Promise.all([
-        fetch(reiseblogRouteGalleryMap.positionApiUrl).then(response => response.json()),
+        // Positionsdaten nur für heute abrufen
+        fetch(reiseblogRouteGalleryMap.positionApiUrl + '?date=' + today).then(response => response.json()),
         fetch(reiseblogRouteGalleryMap.galleryApiUrl).then(response => response.json())
     ])
     .then(([route, gallery]) => {
